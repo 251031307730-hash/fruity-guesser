@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fruity Guesser+ AI — Đoán Từ Vựng</title>
+<meta name="description" content="Fruity Guesser+ AI — game học từ vựng bằng hình ảnh, AI và web search.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#082d2a;--bg1:#0f4038;--bg2:#15564b;--cream:#fff8ea;--cream2:#f4ead4;
+  --ink:#123a32;--soft:#527067;--mango:#ff9f1c;--mango2:#df7900;
+  --red:#ff5d5d;--lime:#9bde5b;--lime2:#6eac35;--blue:#5b7fe0;--purple:#8b6ee8;
+  --gold:#ffd23f;--shadow:0 12px 30px rgba(4,25,21,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Nunito,sans-serif}
+body{
+  min-height:100vh;color:var(--cream);padding:18px 12px 40px;
+  background:radial-gradient(circle at 15% 10%,rgba(255,159,28,.12),transparent 35%),
+             radial-gradient(circle at 90% 85%,rgba(91,127,224,.13),transparent 40%),
+             linear-gradient(160deg,var(--bg0),var(--bg1) 55%,var(--bg2));
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{width:100%;max-width:650px;margin:auto}
+.brand{text-align:center;margin-bottom:14px}
+.brand h1{font-family:"Baloo 2";font-size:clamp(29px,7vw,42px);margin:0;color:var(--gold);line-height:1.05;text-shadow:0 3px rgba(0,0,0,.25)}
+.brand h1 span{color:var(--red)}
+.brand p{margin:6px 0 0;font-size:13px;font-weight:800;color:#e8ddc7}
+.panel{
+  position:relative;background:var(--cream);color:var(--ink);border-radius:25px;padding:21px;
+  box-shadow:var(--shadow);overflow:hidden
+}
+.panel:before{content:"";position:absolute;left:0;right:0;top:0;height:7px;
+  background:repeating-linear-gradient(90deg,var(--mango) 0 25px,var(--red) 25px 50px,var(--lime) 50px 75px,var(--blue) 75px 100px)}
+.hidden{display:none!important}
+.title{font-family:"Baloo 2";font-weight:800;font-size:21px;margin:3px 0 2px}
+.sub{font-size:13px;font-weight:700;color:var(--soft);margin-bottom:14px}
+.grid{display:flex;flex-direction:column;gap:10px}
+.card{
+  border:0;border-radius:17px;padding:14px 15px;text-align:left;color:var(--cream);
+  background:linear-gradient(135deg,var(--bg2),var(--bg1));box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),0 5px 12px rgba(0,0,0,.2)
+}
+.card:hover{transform:translateY(-1px)}
+.cardline{display:flex;gap:12px;align-items:center}.icon{font-size:32px}.name{font-family:"Baloo 2";font-weight:800;font-size:17px}.desc{font-size:12px;opacity:.85;margin-top:1px}
+.ai-card{background:linear-gradient(135deg,#5c49a8,#7b62d8)}
+.ai-card .desc{opacity:.9}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:13px}
+.back{border:0;border-radius:999px;padding:8px 13px;background:var(--ink);color:var(--cream);font-size:13px;font-weight:800}
+.pills{display:flex;gap:7px}.pill{padding:6px 11px;border-radius:999px;background:var(--cream2);font-size:13px;font-weight:800}.coin{color:#ae7900}.combo{color:#d63e3e}
+.levels{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.level{
+  border:0;border-radius:16px;padding:14px 12px;text-align:left;color:#fff;background:linear-gradient(180deg,#96633c,#6d4328);
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.08),0 6px 14px rgba(0,0,0,.2)
+}
+.level:hover{transform:translateY(-2px)}.tag{display:inline-block;background:rgba(0,0,0,.22);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:800;margin-bottom:7px}
+.level .emojis{font-size:23px}.level strong{display:block;margin-top:4px}.level small{opacity:.82}.stars{color:var(--gold);margin-top:7px}
+.timer{height:11px;background:var(--cream2);border-radius:99px;overflow:hidden;margin:5px 0 14px}.timer>div{height:100%;width:100%;background:linear-gradient(90deg,var(--lime),var(--lime2));transition:width 1s}.timer .warn{background:linear-gradient(90deg,var(--mango),var(--mango2))}.timer .danger{background:linear-gradient(90deg,var(--red),#c83b3b)}
+.photo{width:100%;max-width:300px;height:170px;border-radius:17px;overflow:hidden;background:var(--cream2);margin:0 auto 7px;box-shadow:0 7px 16px rgba(0,0,0,.15),inset 0 0 0 4px #fff}
+.photo img{width:100%;height:100%;object-fit:cover}.fallback{height:100%;display:flex;align-items:center;justify-content:center;font-size:68px}
+.caption{text-align:center;color:var(--soft);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin-bottom:11px}
+.blanks{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:16px}.blank{
+  width:33px;height:43px;border-radius:10px;background:var(--cream2);border-bottom:4px solid #d7c9a7;
+  display:flex;align-items:center;justify-content:center;font-family:"Baloo 2";font-weight:800;font-size:20px
+}.blank.filled{border-bottom-color:var(--lime2);background:#fff}.blank.locked{border-bottom-color:var(--mango2)}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;background:var(--bg1);padding:13px 9px;border-radius:15px}.tile{
+  width:39px;height:39px;border:0;border-radius:10px;background:linear-gradient(180deg,var(--mango),var(--mango2));color:#fff;font-family:"Baloo 2";font-weight:800;font-size:18px;box-shadow:0 4px rgba(0,0,0,.18)
+}.tile.spent{visibility:hidden;pointer-events:none}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}.btn{
+  flex:1;min-width:125px;border:0;border-radius:13px;padding:11px 13px;font-family:"Baloo 2";font-weight:800;font-size:15px;box-shadow:0 4px rgba(0,0,0,.15)
+}.btn:active{transform:translateY(3px);box-shadow:none}.primary{background:linear-gradient(180deg,var(--blue),#4662b4);color:#fff}.secondary{background:var(--cream2);color:var(--ink)}.purple{background:linear-gradient(180deg,#9277e8,#6950bd);color:#fff}.green{background:linear-gradient(180deg,var(--lime),var(--lime2));color:#18320f}
+.feedback{text-align:center;min-height:23px;margin:8px 0 4px;font-family:"Baloo 2";font-weight:800}.good{color:var(--lime2)}.bad{color:var(--red)}.info{color:var(--blue)}
+.summaryEmoji{text-align:center;font-size:56px}.summaryTitle{text-align:center;font-family:"Baloo 2";font-size:23px;font-weight:800;margin:0 0 13px}.rows{display:flex;flex-direction:column;gap:7px}.row{display:flex;justify-content:space-between;background:var(--cream2);padding:10px 13px;border-radius:11px;font-weight:800;font-size:13px}
+.row span:last-child{color:var(--mango2)}
+.mini-tabs{display:flex;gap:7px;overflow:auto;margin:10px 0 13px;padding-bottom:2px}.tab{white-space:nowrap;border:0;border-radius:999px;padding:8px 12px;background:var(--cream2);font-weight:800;color:var(--ink)}.tab.active{background:var(--ink);color:#fff}
+.ai-form label{display:block;font-size:12px;font-weight:900;color:var(--soft);margin:9px 0 5px}.ai-form input,.ai-form textarea,.ai-form select{
+  width:100%;border:2px solid #dfd2b7;border-radius:12px;padding:10px 11px;background:#fff;color:var(--ink);outline:0
+}.ai-form input:focus,.ai-form textarea:focus{border-color:var(--blue)}
+.ai-form textarea{min-height:80px;resize:vertical}.help{font-size:11px;color:var(--soft);line-height:1.45;margin-top:7px}
+.ai-status{padding:10px 12px;border-radius:11px;background:#eef3ff;color:#3c4f9c;font-weight:800;font-size:12px;margin:10px 0}.ai-status.error{background:#fff0f0;color:#a33}.ai-status.ok{background:#edf9e5;color:#4d7e24}
+.source-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}.source{display:block;padding:8px 10px;border-radius:10px;background:var(--cream2);color:var(--ink);text-decoration:none;font-size:11px;font-weight:800}
+.source:hover{text-decoration:underline}
+.wrong-list{display:flex;flex-direction:column;gap:8px}.wrong-item{background:var(--cream2);border-radius:13px;padding:11px 12px}.wrong-head{display:flex;justify-content:space-between;gap:8px;font-weight:900}.wrong-word{font-family:"Baloo 2";font-size:18px}.wrong-meta{font-size:11px;color:var(--soft);margin-top:2px}.wrong-actions{display:flex;gap:6px;margin-top:8px}.smallbtn{border:0;border-radius:9px;padding:6px 9px;font-size:11px;font-weight:900;background:#fff;color:var(--ink)}
+.empty{text-align:center;color:var(--soft);font-weight:800;padding:22px 5px}.note{font-size:11px;color:var(--soft);line-height:1.5;margin-top:12px}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#fff;color:var(--ink);padding:10px 15px;border-radius:999px;box-shadow:var(--shadow);font-weight:900;font-size:12px;transition:.2s;z-index:99}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.mute{position:fixed;right:13px;top:12px;width:40px;height:40px;border:0;border-radius:50%;background:var(--cream);z-index:30;box-shadow:0 5px 14px rgba(0,0,0,.3)}
+.loading{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes shake{20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:shake .35s}
+@media(max-width:480px){.panel{padding:18px}.levels{grid-template-columns:1fr 1fr}.blank{width:29px;height:40px}.tile{width:36px;height:36px}.actions .btn{min-width:110px}}
+</style>
+</head>
+<body>
+<button class="mute" id="muteBtn" title="Bật/tắt âm thanh">🔊</button>
+<div class="app">
+  <div class="brand">
+    <h1>Fruity <span>Guesser+</span></h1>
+    <p>Đoán từ • Học nghĩa • Lưu từ sai • Tạo chủ đề bằng AI 🤖</p>
+  </div>
+
+  <section class="panel" id="topicScreen">
+    <div class="title">Chọn chủ đề</div>
+    <div class="sub">Chủ đề có sẵn hoặc để AI tìm web và tạo bộ từ vựng mới.</div>
+    <div class="grid" id="topicGrid"></div>
+    <div class="actions">
+      <button class="btn purple" id="aiTopicBtn">✨ Tạo chủ đề bằng AI</button>
+      <button class="btn secondary" id="wrongBookBtn">📕 Từ tôi hay sai</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="menuScreen">
+    <div class="topbar">
+      <button class="back" id="backTopic">← Chủ đề</button>
+      <div class="pills"><div class="pill coin">🪙 <span id="menuCoins">0</span></div></div>
+    </div>
+    <div class="title" id="menuTitle"></div>
+    <div class="sub" id="menuSub"></div>
+    <div class="levels" id="levelGrid"></div>
+    <div class="actions">
+      <button class="btn secondary" id="menuWrongBtn">📕 Ôn từ sai</button>
+      <button class="btn purple" id="menuAiBtn">✨ AI tạo thêm</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="gameScreen">
+    <div class="topbar">
+      <button class="back" id="backMenu">← Cấp độ</button>
+      <div class="pills"><div class="pill coin">🪙 <span id="coins">0</span></div><div class="pill combo">🔥 <span id="combo">0</span></div></div>
+    </div>
+    <div style="text-align:center;font-size:12px;font-weight:900;color:var(--soft)" id="progress"></div>
+    <div class="timer"><div id="timerFill"></div></div>
+    <div class="photo"><img id="photo" alt="Ảnh gợi ý" referrerpolicy="no-referrer"><div class="fallback" id="fallback">🍎</div></div>
+    <div class="caption">Ảnh gợi ý • xếp chữ cái để đoán</div>
+    <div class="blanks" id="blanks"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="bank" id="bank"></div>
+    <div class="actions">
+      <button class="btn primary" id="hintBtn">💡 Gợi ý chữ (15🪙)</button>
+      <button class="btn secondary" id="skipBtn">Bỏ qua ⏭</button>
+    </div>
+    <div class="note" id="wordInfo"></div>
+  </section>
+
+  <section class="panel hidden" id="summaryScreen">
+    <div class="summaryEmoji" id="sumEmoji">🏆</div>
+    <div class="summaryTitle" id="sumTitle"></div>
+    <div class="rows">
+      <div class="row"><span>Đúng</span><span id="sumCorrect"></span></div>
+      <div class="row"><span>Combo cao nhất</span><span id="sumCombo"></span></div>
+      <div class="row"><span>Xu kiếm được</span><span id="sumCoins"></span></div>
+      <div class="row"><span>Tổng xu</span><span id="sumTotal"></span></div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="replayBtn">🔁 Chơi lại</button>
+      <button class="btn primary" id="nextBtn">Cấp tiếp theo →</button>
+    </div>
+    <div class="actions">
+      <button class="btn purple" id="summaryWrongBtn">📕 Xem từ sai</button>
+      <button class="btn secondary" id="summaryHomeBtn">🏠 Về chủ đề</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="wrongScreen">
+    <div class="topbar"><button class="back" id="wrongBack">← Quay lại</button></div>
+    <div class="title">📕 Sổ từ vựng cần ôn</div>
+    <div class="sub">Từ sai, bỏ qua hoặc hết giờ sẽ được lưu. Càng sai nhiều càng nên ôn lại.</div>
+    <div class="mini-tabs">
+      <button class="tab active" data-filter="all">Tất cả</button>
+      <button class="tab" data-filter="hard">Sai nhiều</button>
+      <button class="tab" data-filter="recent">Mới sai</button>
+    </div>
+    <div class="wrong-list" id="wrongList"></div>
+    <div class="actions">
+      <button class="btn primary" id="reviewBtn">🎯 Ôn tất cả từ sai</button>
+      <button class="btn secondary" id="clearWrongBtn">🧹 Xóa sổ</button>
+    </div>
+  </section>
+
+  <section class="panel hidden" id="aiScreen">
+    <div class="topbar"><button class="back" id="aiBack">← Chủ đề</button></div>
+    <div class="title">✨ AI tạo chủ đề từ web</div>
+    <div class="sub">AI sẽ tìm thông tin mới trên web, sau đó tạo bộ từ vựng 5 cấp độ × 6 từ.</div>
+    <div class="ai-form">
+      <label>Chủ đề muốn học</label>
+      <input id="aiTopic" placeholder="Ví dụ: Du lịch Nhật Bản, AI, bóng đá, cà phê Việt Nam...">
+      <label>Mục tiêu / đối tượng</label>
+      <textarea id="aiGoal" placeholder="Ví dụ: tiếng Anh giao tiếp cho sinh viên, ưu tiên từ thông dụng và có thể dùng trong thực tế."></textarea>
+      <label>Độ khó tổng thể</label>
+      <select id="aiDifficulty">
+        <option value="beginner">Cơ bản → dễ tiếp cận</option>
+        <option value="mixed" selected>Từ dễ → khó</option>
+        <option value="advanced">Nâng cao → chuyên ngành</option>
+      </select>
+      <label>Gemini API Key</label>
+      <input id="apiKey" type="password" autocomplete="off" placeholder="Dán API key Gemini của bạn">
+      <div class="help">
+        Bản GitHub Pages này gọi Gemini trực tiếp từ trình duyệt. API key được lưu <b>chỉ trên thiết bị của bạn</b> bằng localStorage, nhưng đây vẫn không phải cách bảo mật tối ưu cho ứng dụng công khai. Nếu triển khai cho nhiều người dùng, hãy chuyển API call sang backend/Cloudflare Worker.
+      </div>
+      <label>Model</label>
+      <input id="model" value="gemini-3.6-flash">
+      <div class="ai-status" id="aiStatus">Chưa tạo chủ đề.</div>
+      <button class="btn purple" id="generateBtn" style="width:100%;flex:none">🔎 Tìm web + 🤖 Tạo 30 từ</button>
+    </div>
+    <div id="sourceBox" class="hidden" style="margin-top:13px">
+      <div style="font-weight:900;font-size:13px">Nguồn web AI đã sử dụng</div>
+      <div class="source-list" id="sourceList"></div>
+    </div>
+    <div class="note">
+      Gemini Grounding with Google Search cho phép model tìm dữ liệu web thời gian thực và trả về metadata nguồn. Bản này dùng công cụ <b>google_search</b> khi tạo chủ đề.
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+"use strict";
+
+/* =========================
+   LOCAL DATA
+========================= */
+const TOPICS = [
+{
+ id:"fruit",icon:"🍎",name:"Trái Cây",desc:"Từ vựng trái cây quen thuộc",
+ levels:[
+  {label:"Cấp 1",name:"Vườn nhà",desc:"Trái cây cơ bản",time:55,decoys:2,stars:1,coinBase:10,words:[
+   ["kiwi","🥝"],["pear","🍐"],["lemon","🍋"],["mango","🥭"],["melon","🍈"],["apple","🍎"]]},
+  {label:"Cấp 2",name:"Chợ trái cây",desc:"Thêm tên mới",time:50,decoys:3,stars:2,coinBase:14,words:[
+   ["banana","🍌"],["cherry","🍒"],["orange","🍊"],["tomato","🍅"],["papaya","🥭"],["guava","🍈"]]},
+  {label:"Cấp 3",name:"Vùng nhiệt đới",desc:"Từ dài hơn",time:45,decoys:3,stars:3,coinBase:18,words:[
+   ["coconut","🥥"],["avocado","🥑"],["apricot","🍑"],["lychee","🍈"],["kumquat","🍊"],["currant","🫐"]]},
+  {label:"Cấp 4",name:"Rừng quả mọng",desc:"Nhiều chữ giả",time:40,decoys:4,stars:4,coinBase:24,words:[
+   ["tangerine","🍊"],["blueberry","🫐"],["cranberry","🫐"],["starfruit","⭐"],["mandarin","🍊"],["plantain","🍌"]]},
+  {label:"Cấp 5",name:"Bậc thầy trái cây",desc:"Từ dài + ít thời gian",time:35,decoys:5,stars:5,coinBase:32,words:[
+   ["pomegranate","🍎"],["dragonfruit","🐉"],["watermelon","🍉"],["grapefruit","🍊"],["strawberry","🍓"],["blackberry","🫐"]]}
+ ]},
+{
+ id:"marketing",icon:"📣",name:"Marketing",desc:"Từ vựng tiếp thị thực tế",
+ levels:[
+  {label:"Cấp 1",name:"Nhập môn",desc:"Khái niệm cơ bản",time:55,decoys:2,stars:1,coinBase:10,words:[
+   ["brand","🏷️"],["sales","🏷️"],["price","💲"],["media","🎥"],["trend","📈"],["offer","🏷️"]]},
+  {label:"Cấp 2",name:"Ra thị trường",desc:"Thuật ngữ mới",time:50,decoys:3,stars:2,coinBase:14,words:[
+   ["market","🏪"],["coupon","🎫"],["banner","📰"],["social","📱"],["review","⭐"],["budget","🧮"]]},
+  {label:"Cấp 3",name:"Xây dựng nội dung",desc:"Từ dài hơn",time:45,decoys:3,stars:3,coinBase:18,words:[
+   ["content","🎬"],["catalog","📖"],["website","💻"],["feedback","📝"],["audience","👥"],["discount","➗"]]},
+  {label:"Cấp 4",name:"Chiến dịch",desc:"Nhiều chữ giả",time:40,decoys:4,stars:4,coinBase:24,words:[
+   ["campaign","📣"],["strategy","♟️"],["branding","🎨"],["shopping","🛒"],["consumer","🛍️"],["marketing","📊"]]},
+  {label:"Cấp 5",name:"Bậc thầy Marketing",desc:"Thuật ngữ dài",time:35,decoys:5,stars:5,coinBase:32,words:[
+   ["promotion","📢"],["analytics","📊"],["engagement","❤️"],["advertising","🪧"],["influencer","🤳"],["subscription","📦"]]}
+ ]},
+{
+ id:"business",icon:"💼",name:"Quản Trị Kinh Doanh",desc:"Từ vựng doanh nghiệp",
+ levels:[
+  {label:"Cấp 1",name:"Nền tảng",desc:"Khái niệm cơ bản",time:55,decoys:2,stars:1,coinBase:10,words:[
+   ["boss","🧑‍💼"],["team","🤝"],["plan","📋"],["goal","🎯"],["risk","⚠️"],["cost","🧾"]]},
+  {label:"Cấp 2",name:"Vận hành",desc:"Thuật ngữ mới",time:50,decoys:3,stars:2,coinBase:14,words:[
+   ["profit","💹"],["client","🤝"],["leader","🧑‍💼"],["office","🏢"],["salary","💵"],["vendor","🏪"]]},
+  {label:"Cấp 3",name:"Phòng ban",desc:"Từ dài hơn",time:45,decoys:3,stars:3,coinBase:18,words:[
+   ["manager","🧑‍💼"],["finance","💰"],["meeting","🗓️"],["project","📌"],["revenue","📈"],["company","🏢"]]},
+  {label:"Cấp 4",name:"Chiến lược",desc:"Nhiều chữ giả",time:40,decoys:4,stars:4,coinBase:24,words:[
+   ["employee","🧑‍💻"],["contract","📝"],["resource","📦"],["decision","🚦"],["schedule","🗓️"],["executive","🧑‍💼"]]},
+  {label:"Cấp 5",name:"Bậc thầy Quản Trị",desc:"Thuật ngữ dài",time:35,decoys:5,stars:5,coinBase:32,words:[
+   ["management","🧑‍🤝‍🧑"],["negotiation","🤝"],["stakeholder","👥"],["leadership","🧭"],["organization","🗂️"],["productivity","✅"]]}
+ ]}
+];
+
+/* =========================
+   PERSISTENCE
+========================= */
+const STORAGE = {
+ coins:"fg_ai_coins_v2",
+ wrong:"fg_ai_wrong_v2",
+ topics:"fg_ai_topics_v2",
+ api:"fg_ai_api_v2",
+ model:"fg_ai_model_v2"
+};
+const loadJSON=(k,f)=>{try{const x=localStorage.getItem(k);return x?JSON.parse(x):f}catch{return f}};
+const saveJSON=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let coins = Number(localStorage.getItem(STORAGE.coins)||0);
+let wrongBook = loadJSON(STORAGE.wrong,{});
+let aiTopics = loadJSON(STORAGE.topics,[]);
+let activeFilter="all";
+
+/* =========================
+   STATE
+========================= */
+const state={
+ topic:null,level:0,word:0,filled:[],bank:[],locked:new Set(),combo:0,maxCombo:0,
+ correct:0,earned:0,time:0,timer:null,reviewMode:false,reviewWords:[],reviewIndex:0,muted:false
+};
+
+/* =========================
+   DOM
+========================= */
+const $=id=>document.getElementById(id);
+const topicScreen=$("topicScreen"),menuScreen=$("menuScreen"),gameScreen=$("gameScreen"),summaryScreen=$("summaryScreen"),wrongScreen=$("wrongScreen"),aiScreen=$("aiScreen");
+const topicGrid=$("topicGrid"),levelGrid=$("levelGrid"),menuTitle=$("menuTitle"),menuSub=$("menuSub");
+const coinsEl=$("coins"),menuCoins=$("menuCoins"),comboEl=$("combo"),progress=$("progress"),timerFill=$("timerFill");
+const photo=$("photo"),fallback=$("fallback"),blanks=$("blanks"),bank=$("bank"),feedback=$("feedback"),wordInfo=$("wordInfo");
+const hintBtn=$("hintBtn"),skipBtn=$("skipBtn"),toastEl=$("toast");
+const wrongList=$("wrongList"),aiStatus=$("aiStatus"),sourceBox=$("sourceBox"),sourceList=$("sourceList");
+
+/* =========================
+   AUDIO
+========================= */
+let audio=null,master=null,musicTimer=null;
+function audioInit(){
+ if(audio)return;
+ try{
+  audio=new (window.AudioContext||window.webkitAudioContext)();
+  master=audio.createGain();master.gain.value=state.muted?0:.45;master.connect(audio.destination);
+ }catch{}
+}
+function tone(f,d=.08,type="square",gain=.2,delay=0){
+ if(!audio||!master)return;
+ const t=audio.currentTime+delay,o=audio.createOscillator(),g=audio.createGain();
+ o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(gain,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+ o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.03);
+}
+function sfx(kind){
+ audioInit();
+ if(kind==="click")tone(880,.06,"square",.15);
+ if(kind==="good"){tone(523,.11,"square",.35);tone(784,.14,"square",.35,.08);tone(1047,.16,"square",.3,.16)}
+ if(kind==="bad"){tone(196,.16,"sawtooth",.25);tone(147,.2,"sawtooth",.22,.1)}
+ if(kind==="hint")tone(660,.12,"sine",.3);
+ if(kind==="done"){[523,659,784,1047].forEach((f,i)=>tone(f,.18,"square",.3,i*.1))}
+}
+$("muteBtn").addEventListener("click",()=>{state.muted=!state.muted;audioInit();if(master)master.gain.value=state.muted?0:.45;$("muteBtn").textContent=state.muted?"🔇":"🔊"});
+document.addEventListener("click",()=>audioInit(),{once:true});
+
+/* =========================
+   HELPERS
+========================= */
+function show(screen){
+ [topicScreen,menuScreen,gameScreen,summaryScreen,wrongScreen,aiScreen].forEach(x=>x.classList.add("hidden"));
+ screen.classList.remove("hidden");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function currentTopic(){return state.topic}
+function currentLevel(){return state.topic.levels[state.level]}
+function currentWord(){return currentLevel().words[state.word]}
+function normalizeWord(x){return String(x||"").toLowerCase().trim().replace(/[^a-z]/g,"")}
+function imgFor(word){
+ return `https://loremflickr.com/600/400/${encodeURIComponent(word.w||word.word||"english,vocabulary")}/all`;
+}
+function updateStats(){coinsEl.textContent=coins;menuCoins.textContent=coins;comboEl.textContent=state.combo;localStorage.setItem(STORAGE.coins,coins)}
+function toast(t){toastEl.textContent=t;toastEl.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>toastEl.classList.remove("show"),2200)}
+function topicKey(t){return t.id||("ai_"+t.name.toLowerCase().replace(/\W+/g,"_"))}
+
+/* Convert AI/local formats to one game format */
+function adaptTopic(t){
+ const topic={id:topicKey(t),icon:t.icon||"✨",name:t.name||"Chủ đề AI",desc:t.desc||"Chủ đề được AI tạo",sourceUrls:Array.isArray(t.sourceUrls)?t.sourceUrls:[],levels:[]};
+ const raw=Array.isArray(t.levels)?t.levels:[];
+ for(let i=0;i<5;i++){
+  const r=raw[i]||{};
+  let words=Array.isArray(r.words)?r.words:[];
+  words=words.map(w=>{
+   if(Array.isArray(w)) return {w:normalizeWord(w[0]),e:w[1]||"🔤",meaning:"",example:"",img:w[0]};
+   return {w:normalizeWord(w.word||w.w),e:w.emoji||w.e||"🔤",meaning:w.meaning_vi||w.meaning||"",example:w.example||"",img:w.image_query||w.word||w.w};
+  }).filter(w=>w.w).slice(0,6);
+  topic.levels.push({
+   label:r.label||`Cấp ${i+1}`,name:r.name||["Nhập môn","Cơ bản","Trung cấp","Nâng cao","Bậc thầy"][i],
+   desc:r.desc||"Từ vựng theo chủ đề",time:[55,50,45,40,35][i],decoys:[2,3,3,4,5][i],
+   stars:i+1,coinBase:[10,14,18,24,32][i],words
+  });
+ }
+ return topic;
+}
+
+/* =========================
+   TOPICS
+========================= */
+function allTopics(){return [...TOPICS,...aiTopics.map(adaptTopic)]}
+function renderTopics(){
+ topicGrid.innerHTML="";
+ allTopics().forEach((t,i)=>{
+  const b=document.createElement("button");b.className="card";
+  b.innerHTML=`<div class="cardline"><div class="icon">${t.icon}</div><div><div class="name">${escapeHTML(t.name)}</div><div class="desc">${escapeHTML(t.desc)}</div></div></div>`;
+  b.onclick=()=>{state.topic=t;renderLevels();menuTitle.textContent=`${t.icon} ${t.name}`;menuSub.textContent="Cấp 1 dễ nhất — Cấp 5 khó nhất. Mỗi cấp có 6 từ.";show(menuScreen);sfx("click")};
+  topicGrid.appendChild(b);
+ });
+ const ai=document.createElement("button");ai.className="card ai-card";ai.innerHTML=`<div class="cardline"><div class="icon">✨</div><div><div class="name">Tạo chủ đề mới bằng AI</div><div class="desc">AI tìm web → tạo nội dung → thêm ngay vào game</div></div></div>`;
+ ai.onclick=()=>show(aiScreen);topicGrid.appendChild(ai);
+}
+function renderLevels(){
+ levelGrid.innerHTML="";
+ state.topic.levels.forEach((lv,i)=>{
+  const b=document.createElement("button");b.className="level";
+  const em=lv.words.slice(0,3).map(w=>w.e).join(" ");
+  b.innerHTML=`<span class="tag">${lv.label}</span><div class="emojis">${em}</div><strong>${escapeHTML(lv.name)}</strong><small>${escapeHTML(lv.desc)}</small><div class="stars">${"★".repeat(lv.stars)}${"☆".repeat(5-lv.stars)}</div>`;
+  b.onclick=()=>startLevel(i);levelGrid.appendChild(b);
+ });
+}
+
+/* =========================
+   GAME
+========================= */
+function startLevel(i){
+ clearInterval(state.timer);state.level=i;state.word=0;state.correct=0;state.earned=0;state.combo=0;state.maxCombo=0;state.reviewMode=false;updateStats();show(gameScreen);loadWord();
+}
+function startReview(){
+ const arr=Object.values(wrongBook).sort((a,b)=>(b.wrong||0)-(a.wrong||0));
+ if(!arr.length){toast("Chưa có từ sai để ôn.");return}
+ state.reviewMode=true;state.reviewWords=arr;state.reviewIndex=0;state.combo=0;state.correct=0;state.earned=0;
+ state.topic={id:"review",icon:"📕",name:"Ôn từ sai",desc:"Những từ bạn cần nhớ",levels:[{label:"Ôn tập",name:"Sổ từ sai",desc:"Luyện lại từ khó",time:60,decoys:3,stars:5,coinBase:12,words:arr.map(x=>({w:x.word,e:x.emoji||"📕",meaning:x.meaning||"",example:x.example||"",img:x.word}))}]};
+ state.level=0;state.word=0;show(gameScreen);loadWord();
+}
+function loadWord(){
+ clearInterval(state.timer);
+ const lv=currentLevel(),w=currentWord();
+ if(!w){finishLevel();return}
+ state.filled=new Array(w.w.length).fill(null);state.locked=new Set();state.time=lv.time;
+ progress.textContent=state.reviewMode?`📕 Ôn tập • Từ ${state.word+1}/${lv.words.length}`:`${lv.label} • Từ ${state.word+1}/${lv.words.length}`;
+ feedback.textContent="";feedback.className="feedback";
+ wordInfo.innerHTML=w.meaning?`📖 <b>${escapeHTML(w.meaning)}</b>${w.example?` — “${escapeHTML(w.example)}”`:""}`:"";
+ loadPhoto(w);buildBank(w.w,lv.decoys);renderBlanks();renderBank();updateHint();startTimer();
+}
+function loadPhoto(w){
+ fallback.textContent=w.e||"🔤";fallback.classList.remove("show");photo.style.display="block";
+ photo.onerror=()=>{photo.style.display="none";fallback.classList.add("show")};
+ photo.src=imgFor(w);
+}
+function buildBank(word,n){
+ const letters=word.split(""),dec=[];
+ const alphabet="abcdefghijklmnopqrstuvwxyz";
+ while(dec.length<n)dec.push(alphabet[Math.floor(Math.random()*alphabet.length)]);
+ state.bank=shuffle(letters.concat(dec)).map(char=>({char,spent:false}));
+}
+function renderBlanks(){
+ blanks.innerHTML="";
+ state.filled.forEach((f,i)=>{
+  const d=document.createElement("div");d.className="blank"+(f?" filled":"")+(state.locked.has(i)?" locked":"");d.textContent=f?f.char.toUpperCase():"";
+  if(f&&!state.locked.has(i))d.onclick=()=>unfill(i);blanks.appendChild(d);
+ });
+}
+function renderBank(){
+ bank.innerHTML="";
+ state.bank.forEach((t,i)=>{const b=document.createElement("button");b.className="tile"+(t.spent?" spent":"");b.textContent=t.char.toUpperCase();b.onclick=()=>fill(i);bank.appendChild(b)});
+}
+function firstEmpty(){return state.filled.findIndex(x=>x===null)}
+function fill(i){
+ const t=state.bank[i];const idx=firstEmpty();if(!t||t.spent||idx<0)return;
+ state.filled[idx]={char:t.char,bankIdx:i};t.spent=true;sfx("click");renderBlanks();renderBank();if(firstEmpty()<0)setTimeout(check,130);
+}
+function unfill(i){const f=state.filled[i];if(!f)return;state.bank[f.bankIdx].spent=false;state.filled[i]=null;renderBlanks();renderBank();updateHint()}
+function check(){
+ const target=currentWord().w,attempt=state.filled.map(x=>x.char).join("");
+ if(attempt===target)success();else wrong("wrong");
+}
+function success(){
+ clearInterval(state.timer);state.combo++;state.maxCombo=Math.max(state.maxCombo,state.combo);
+ const earned=Math.round(currentLevel().coinBase*(1+Math.min(state.combo,10)*.15));coins+=earned;state.earned+=earned;state.correct++;updateStats();sfx("good");
+ feedback.textContent=`Chính xác! +${earned}🪙 • combo x${state.combo}`;feedback.className="feedback good";
+ setTimeout(nextWord,800);
+}
+function registerWrong(reason){
+ const w=currentWord(),key=normalizeWord(w.w);
+ if(!wrongBook[key])wrongBook[key]={word:w.w,emoji:w.e||"📕",meaning:w.meaning||"",example:w.example||"",wrong:0,correct:0,last:0,topic:state.topic.name};
+ wrongBook[key].wrong=(wrongBook[key].wrong||0)+1;wrongBook[key].last=Date.now();wrongBook[key].lastReason=reason;
+ saveJSON(STORAGE.wrong,wrongBook);
+}
+function wrong(reason="wrong"){
+ state.combo=0;updateStats();registerWrong(reason);sfx("bad");
+ feedback.textContent=reason==="time"?`Hết giờ! Từ đúng: ${currentWord().w.toUpperCase()}`:`Chưa đúng — từ này đã được lưu vào Sổ từ sai 📕`;
+ feedback.className="feedback bad";[...blanks.children].forEach(x=>x.classList.add("shake"));
+ setTimeout(()=>{state.filled.forEach((f,i)=>{if(f&&!state.locked.has(i)){state.bank[f.bankIdx].spent=false;state.filled[i]=null}});renderBlanks();renderBank();updateHint()},420);
+ if(reason==="time"||reason==="skip")setTimeout(nextWord,1000);
+}
+function nextWord(){
+ if(state.word<currentLevel().words.length-1){state.word++;loadWord()}else finishLevel();
+}
+function startTimer(){
+ updateTimer();
+ state.timer=setInterval(()=>{state.time--;updateTimer();if(state.time<=0){clearInterval(state.timer);wrong("time");setTimeout(()=>{if(state.word<currentLevel().words.length-1)nextWord();else finishLevel()},1150)}},1000);
+}
+function updateTimer(){
+ const pct=Math.max(0,state.time/currentLevel().time*100);timerFill.style.width=pct+"%";timerFill.classList.remove("warn","danger");if(pct<20)timerFill.classList.add("danger");else if(pct<50)timerFill.classList.add("warn");
+}
+function useHint(){
+ const idx=firstEmpty();if(idx<0||coins<15)return;
+ const target=currentWord().w,need=target[idx];let bi=state.bank.findIndex(x=>!x.spent&&x.char===need);
+ if(bi<0){state.bank.push({char:need,spent:true});bi=state.bank.length-1}else state.bank[bi].spent=true;
+ state.filled[idx]={char:need,bankIdx:bi};state.locked.add(idx);coins-=15;updateStats();sfx("hint");feedback.textContent="Đã mở một chữ cái 💡";feedback.className="feedback info";renderBlanks();renderBank();updateHint();if(firstEmpty()<0)setTimeout(check,130)
+}
+function updateHint(){hintBtn.disabled=coins<15||firstEmpty()<0;hintBtn.textContent="💡 Gợi ý chữ (15🪙)"}
+function skip(){
+ clearInterval(state.timer);registerWrong("skip");state.combo=0;updateStats();feedback.textContent=`Bỏ qua — ${currentWord().w.toUpperCase()} đã được đưa vào Sổ từ sai.`;feedback.className="feedback info";
+ setTimeout(nextWord,850)
+}
+function finishLevel(){
+ clearInterval(state.timer);show(summaryScreen);sfx("done");
+ const lv=currentLevel(),perfect=state.correct===lv.words.length;
+ $("sumEmoji").textContent=perfect?"🏆":state.correct>=lv.words.length/2?"🎉":"📕";
+ $("sumTitle").textContent=state.reviewMode?"Hoàn thành ôn tập!":`Hoàn thành ${lv.label}: ${lv.name}!`;
+ $("sumCorrect").textContent=`${state.correct}/${lv.words.length}`;$("sumCombo").textContent="x"+state.maxCombo;$("sumCoins").textContent="+"+state.earned+" 🪙";$("sumTotal").textContent=coins+" 🪙";
+ $("nextBtn").style.display=state.reviewMode||state.level>=state.topic.levels.length-1?"none":"block";
+}
+
+/* =========================
+   WRONG BOOK
+========================= */
+function renderWrong(){
+ let arr=Object.values(wrongBook);
+ if(activeFilter==="hard")arr=arr.filter(x=>(x.wrong||0)>=2).sort((a,b)=>b.wrong-a.wrong);
+ if(activeFilter==="recent")arr=arr.sort((a,b)=>(b.last||0)-(a.last||0)).slice(0,20);
+ if(!arr.length){wrongList.innerHTML=`<div class="empty">🎉 Chưa có từ nào trong nhóm này.</div>`;return}
+ wrongList.innerHTML="";
+ arr.forEach(x=>{
+  const d=document.createElement("div");d.className="wrong-item";
+  d.innerHTML=`<div class="wrong-head"><span class="wrong-word">${escapeHTML(x.word)}</span><span>❌ ${x.wrong||0}</span></div>
+  <div class="wrong-meta">${escapeHTML(x.meaning||"Chưa có nghĩa")} • ${escapeHTML(x.topic||"AI")}</div>
+  <div class="wrong-actions"><button class="smallbtn" data-word="${escapeHTML(x.word)}">🎯 Ôn từ</button><button class="smallbtn" data-del="${escapeHTML(x.word)}">🗑 Xóa</button></div>`;
+  d.querySelector("[data-word]").onclick=()=>reviewOne(x.word);
+  d.querySelector("[data-del]").onclick=()=>{delete wrongBook[normalizeWord(x.word)];saveJSON(STORAGE.wrong,wrongBook);renderWrong()};
+  wrongList.appendChild(d);
+ });
+}
+function reviewOne(word){
+ const key=normalizeWord(word),x=wrongBook[key];if(!x)return;
+ state.reviewWords=[x];state.reviewMode=true;state.reviewIndex=0;
+ state.topic={id:"reviewone",icon:"📕",name:"Ôn một từ",desc:"Luyện từ đã sai",levels:[{label:"Ôn tập",name:x.word,desc:"Luyện lại từ này",time:60,decoys:3,stars:5,coinBase:12,words:[x]}]};
+ state.level=0;state.word=0;show(gameScreen);loadWord();
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");activeFilter=t.dataset.filter;renderWrong()});
+$("clearWrongBtn").onclick=()=>{if(confirm("Xóa toàn bộ Sổ từ sai?")){wrongBook={};saveJSON(STORAGE.wrong,wrongBook);renderWrong()}};
+$("reviewBtn").onclick=startReview;
+
+/* =========================
+   GEMINI AI + GOOGLE SEARCH GROUNDING
+========================= */
+function aiPrompt(topic,goal,diff){
+ return `Bạn là chuyên gia thiết kế game học tiếng Anh cho người Việt.
+Hãy tìm kiếm thông tin mới trên web về chủ đề: "${topic}".
+Mục tiêu người học: ${goal||"người học tiếng Anh phổ thông"}.
+Độ khó: ${diff}.
+Sau khi tìm web, hãy tạo một bộ dữ liệu game Fruity Guesser+.
+YÊU CẦU:
+- 5 cấp độ, mỗi cấp đúng 6 từ = 30 từ.
+- Từ phải là tiếng Anh thật, liên quan trực tiếp chủ đề, ưu tiên từ có thể kiểm chứng từ nguồn web.
+- Cấp độ tăng dần về độ khó.
+- Mỗi từ có nghĩa tiếng Việt ngắn gọn và một câu ví dụ tiếng Anh tự nhiên.
+- emoji phù hợp.
+- không lặp từ.
+- Không dùng tên riêng nếu không cần thiết.
+- Trả về JSON thuần, không markdown.
+Cấu trúc:
+{
+ "name":"Tên chủ đề tiếng Việt",
+ "icon":"emoji",
+ "desc":"mô tả ngắn",
+ "sourceUrls":["https://..."],
+ "levels":[
+  {"label":"Cấp 1","name":"...","desc":"...","words":[
+   {"word":"...","meaning_vi":"...","example":"...","emoji":"...","image_query":"..."}
+  ]}
+ ]
+}
+Chỉ trả JSON hợp lệ.`;
+}
+async function generateAI(){
+ const topic=$("aiTopic").value.trim(),goal=$("aiGoal").value.trim(),diff=$("aiDifficulty").value;
+ const key=$("apiKey").value.trim(),model=$("model").value.trim()||"gemini-3.6-flash";
+ if(!topic){aiStatus.textContent="Hãy nhập chủ đề.";aiStatus.className="ai-status error";return}
+ if(!key){aiStatus.textContent="Hãy nhập Gemini API key.";aiStatus.className="ai-status error";return}
+ localStorage.setItem(STORAGE.api,key);localStorage.setItem(STORAGE.model,model);
+ aiStatus.className="ai-status";aiStatus.innerHTML='<span class="loading"></span> AI đang tìm web và tạo 30 từ...';
+ $("generateBtn").disabled=true;sourceBox.classList.add("hidden");sourceList.innerHTML="";
+ try{
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+  const body={
+   contents:[{role:"user",parts:[{text:aiPrompt(topic,goal,diff)}]}],
+   tools:[{google_search:{}}],
+   generationConfig:{temperature:.65,responseMimeType:"application/json"}
+  };
+  const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const data=await res.json();
+  if(!res.ok)throw new Error(data?.error?.message||"Gemini API lỗi");
+  const text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"";
+  if(!text)throw new Error("AI không trả về nội dung.");
+  let parsed;
+  try{parsed=JSON.parse(text)}catch{
+   const cleaned=text.replace(/^```json\s*/i,"").replace(/```$/,"").trim();parsed=JSON.parse(cleaned)
+  }
+  const topicObj=adaptTopic(parsed);
+  if(topicObj.levels.some(l=>l.words.length<6))throw new Error("AI tạo thiếu từ. Hãy thử lại với chủ đề cụ thể hơn.");
+  aiTopics=aiTopics.filter(x=>x.id!==topicObj.id);aiTopics.unshift(parsed);saveJSON(STORAGE.topics,aiTopics);
+  renderTopics();state.topic=topicObj;renderLevels();menuTitle.textContent=`${topicObj.icon} ${topicObj.name}`;menuSub.textContent="Chủ đề vừa được AI tạo từ thông tin web. Chọn cấp độ để chơi.";show(menuScreen);
+  aiStatus.className="ai-status ok";aiStatus.textContent=`Đã tạo ${topicObj.levels.reduce((n,l)=>n+l.words.length,0)} từ và thêm chủ đề vào game.`;
+  const chunks=data?.candidates?.[0]?.groundingMetadata?.groundingChunks||[];
+  const urls=[...(parsed.sourceUrls||[])];
+  chunks.forEach(c=>{const u=c?.web?.uri;if(u&&!urls.includes(u))urls.push(u)});
+  if(urls.length){sourceBox.classList.remove("hidden");urls.slice(0,8).forEach(u=>{const a=document.createElement("a");a.className="source";a.href=u;a.target="_blank";a.rel="noopener noreferrer";a.textContent=u;sourceList.appendChild(a)})}
+  toast("✨ Chủ đề AI đã được thêm!");
+ }catch(e){
+  console.error(e);aiStatus.className="ai-status error";aiStatus.textContent="Lỗi: "+e.message;
+ }finally{$("generateBtn").disabled=false}
+}
+$("generateBtn").onclick=generateAI;
+$("apiKey").value=localStorage.getItem(STORAGE.api)||"";
+$("model").value=localStorage.getItem(STORAGE.model)||"gemini-3.6-flash";
+
+/* =========================
+   NAVIGATION
+========================= */
+$("aiTopicBtn").onclick=()=>{show(aiScreen);aiStatus.className="ai-status";aiStatus.textContent="Chưa tạo chủ đề.";};
+$("menuAiBtn").onclick=()=>show(aiScreen);
+$("wrongBookBtn").onclick=()=>{renderWrong();show(wrongScreen)};
+$("menuWrongBtn").onclick=()=>{renderWrong();show(wrongScreen)};
+$("wrongBack").onclick=()=>show(state.topic&&state.topic.id!=="review"?menuScreen:topicScreen);
+$("aiBack").onclick=()=>show(topicScreen);
+$("backTopic").onclick=()=>{clearInterval(state.timer);show(topicScreen)};
+$("backMenu").onclick=()=>{clearInterval(state.timer);show(menuScreen)};
+$("hintBtn").onclick=useHint;$("skipBtn").onclick=skip;
+$("replayBtn").onclick=()=>state.reviewMode?startReview():startLevel(state.level);
+$("nextBtn").onclick=()=>{if(state.level<state.topic.levels.length-1)startLevel(state.level+1);else show(menuScreen)};
+$("summaryWrongBtn").onclick=()=>{renderWrong();show(wrongScreen)};
+$("summaryHomeBtn").onclick=()=>show(topicScreen);
+
+/* =========================
+   SECURITY / HTML
+========================= */
+function escapeHTML(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+/* =========================
+   INIT
+========================= */
+renderTopics();updateStats();show(topicScreen);
+})();
+</script>
+</body>
+</html>
