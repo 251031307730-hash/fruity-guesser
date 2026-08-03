@@ -1,1024 +1,177 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Fruity Guesser+ — Đoán Từ Vựng</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fruity Guesser+</title>
 <style>
-  :root{
-    --bg-0:#0B332F;
-    --bg-1:#0F4038;
-    --bg-2:#155249;
-    --crate:#8A5A34;
-    --crate-dark:#6E4426;
-    --cream:#FFF8EA;
-    --cream-dim:#F3E9D2;
-    --ink:#123A32;
-    --ink-soft:#3E6158;
-    --mango:#FF9F1C;
-    --mango-dark:#E07E00;
-    --watermelon:#FF5D5D;
-    --lime:#9BDE5B;
-    --lime-dark:#6FAE33;
-    --gold:#FFD23F;
-    --gold-dark:#D9A400;
-    --blueberry:#5B7FE0;
-    --shadow: 0 10px 24px rgba(6,26,22,0.35);
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    min-height:100vh;
-    font-family:'Nunito', sans-serif;
-    background:
-      radial-gradient(circle at 15% 10%, rgba(255,159,28,0.10), transparent 40%),
-      radial-gradient(circle at 85% 85%, rgba(91,127,224,0.12), transparent 45%),
-      linear-gradient(160deg, var(--bg-0), var(--bg-1) 55%, var(--bg-2));
-    color:var(--cream);
-    display:flex;
-    justify-content:center;
-    padding:20px 14px 40px;
-  }
-  .app{ width:100%; max-width:560px; }
-  .brand{ text-align:center; margin-bottom:18px; }
-  .brand h1{
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size:clamp(28px,7vw,40px);
-    margin:0;
-    letter-spacing:0.5px;
-    color:var(--gold);
-    text-shadow: 0 3px 0 rgba(0,0,0,0.25);
-  }
-  .brand h1 span{color:var(--watermelon);}
-  .brand p{
-    margin:6px 0 0;
-    font-weight:700;
-    color:var(--cream-dim);
-    opacity:0.85;
-    font-size:14px;
-  }
-
-  .panel{
-    background:var(--cream);
-    color:var(--ink);
-    border-radius:26px;
-    box-shadow:var(--shadow);
-    padding:22px;
-    position:relative;
-    overflow:hidden;
-  }
-  .panel::before{
-    content:"";
-    position:absolute; top:0; left:0; right:0; height:8px;
-    background:repeating-linear-gradient(90deg, var(--mango) 0 22px, var(--watermelon) 22px 44px, var(--lime) 44px 66px, var(--blueberry) 66px 88px);
-    opacity:0.9;
-  }
-  .panel-title{ font-family:'Baloo 2', sans-serif; font-weight:800; font-size:18px; margin-bottom:4px; }
-  .panel-sub{ font-size:13px; color:var(--ink-soft); font-weight:700; margin-bottom:14px; }
-
-  /* Topic grid */
-  .topic-grid{ display:flex; flex-direction:column; gap:12px; margin-top:8px; }
-  .topic-card{
-    display:flex; align-items:center; gap:14px;
-    border:none; cursor:pointer; text-align:left;
-    border-radius:18px; padding:14px 16px;
-    background:linear-gradient(135deg, var(--bg-2), var(--bg-1));
-    color:var(--cream);
-    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.08), 0 6px 14px rgba(0,0,0,0.25);
-    transition:transform .12s ease;
-    font-family:'Nunito', sans-serif;
-  }
-  .topic-card:hover{ transform:translateY(-2px); }
-  .topic-card .icon{ font-size:34px; }
-  .topic-card .name{ font-family:'Baloo 2', sans-serif; font-weight:800; font-size:17px; }
-  .topic-card .desc{ font-size:12px; opacity:0.85; margin-top:2px; }
-
-  /* Level grid (crates) */
-  .level-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-top:8px; }
-  .crate{
-    position:relative; border:none; cursor:pointer; border-radius:16px;
-    padding:16px 12px 14px; text-align:left;
-    background:linear-gradient(180deg, var(--crate), var(--crate-dark));
-    color:var(--cream);
-    box-shadow: inset 0 0 0 3px rgba(255,255,255,0.08), 0 6px 14px rgba(0,0,0,0.25);
-    transition:transform .12s ease;
-    font-family:'Nunito', sans-serif;
-  }
-  .crate:hover{ transform:translateY(-3px); }
-  .crate:active{ transform:translateY(0) scale(0.98); }
-  .crate .lv-tag{
-    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:12px;
-    background:rgba(0,0,0,0.22); display:inline-block; padding:2px 9px; border-radius:999px; margin-bottom:8px;
-  }
-  .crate .lv-emojis{ font-size:24px; line-height:1; margin-bottom:6px; }
-  .crate .lv-name{ font-weight:800; font-size:16px; }
-  .crate .lv-desc{ font-size:12px; opacity:0.85; margin-top:2px; }
-  .crate .lv-stars{ margin-top:8px; font-size:13px; letter-spacing:2px; color:var(--gold); }
-
-  /* Top bar */
-  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; flex-wrap:wrap; }
-  .btn-back{
-    background:var(--ink); color:var(--cream); border:none; border-radius:999px;
-    padding:8px 14px; font-weight:800; font-size:13px; cursor:pointer; font-family:'Nunito', sans-serif;
-  }
-  .stat-pill{
-    display:flex; align-items:center; gap:6px; background:var(--cream-dim);
-    border-radius:999px; padding:6px 12px; font-weight:800; font-size:14px;
-    box-shadow: inset 0 0 0 2px rgba(18,58,50,0.06);
-  }
-  .stat-pill.coins{ color:var(--gold-dark); }
-  .stat-pill.combo{ color:var(--watermelon); }
-
-  .timer-track{
-    width:100%; height:12px; border-radius:999px; background:var(--cream-dim);
-    overflow:hidden; margin:6px 0 16px; box-shadow: inset 0 0 0 2px rgba(18,58,50,0.06);
-  }
-  .timer-fill{ height:100%; border-radius:999px; background:linear-gradient(90deg, var(--lime), var(--lime-dark)); transition: width 1s linear, background .3s ease; }
-  .timer-fill.warn{ background:linear-gradient(90deg, var(--mango), var(--mango-dark)); }
-  .timer-fill.danger{ background:linear-gradient(90deg, var(--watermelon), #C23A3A); }
-
-  /* Word / image area */
-  .word-stage{ display:flex; flex-direction:column; align-items:center; margin-bottom:14px; }
-  .photo-frame{
-    width:100%; max-width:280px; height:160px; border-radius:16px; overflow:hidden;
-    background:var(--cream-dim); position:relative;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15), inset 0 0 0 4px #fff;
-    margin-bottom:6px;
-  }
-  .photo-frame img{
-    width:100%; height:100%; object-fit:cover; display:block;
-    animation: fade-in .35s ease;
-  }
-  .photo-fallback{
-    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
-    font-size:64px; background:var(--cream-dim);
-  }
-  .photo-fallback.show{ display:flex; }
-  .word-caption{ font-weight:700; font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
-  .blanks{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
-  .blank{
-    width:34px; height:44px; border-radius:10px; background:var(--cream-dim);
-    border-bottom:4px solid #D8C9A5; display:flex; align-items:center; justify-content:center;
-    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:20px; color:var(--ink);
-    cursor:pointer; transition: transform .12s ease;
-  }
-  .blank.filled{ background:linear-gradient(180deg, #FFFFFF, var(--cream-dim)); border-bottom-color:var(--lime-dark); }
-  .blank.locked{ border-bottom-color:var(--mango-dark); }
-  .blank.shake{ animation: shake .38s ease; }
-  .blank:active{ transform:scale(0.94); }
-
-  .letter-bank{ display:flex; gap:9px; flex-wrap:wrap; justify-content:center; padding:14px 10px; border-radius:16px; background:var(--bg-1); }
-  .tile{
-    width:40px; height:40px; border-radius:11px; border:none;
-    background:linear-gradient(180deg, var(--mango), var(--mango-dark)); color:#fff;
-    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:18px; cursor:pointer;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.18); transition: transform .08s ease;
-  }
-  .tile:active{ transform:translateY(3px); box-shadow:none; }
-  .tile.spent{ visibility:hidden; pointer-events:none; }
-
-  .actions{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
-  .btn{
-    flex:1; min-width:120px; border:none; border-radius:14px; padding:12px 14px;
-    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:15px; cursor:pointer;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.15); transition: transform .08s ease;
-  }
-  .btn:active{ transform:translateY(3px); box-shadow:none; }
-  .btn-hint{ background:linear-gradient(180deg, var(--blueberry), #4463B8); color:#fff; }
-  .btn-hint:disabled{ background:#B9C2D6; color:#7C8598; cursor:not-allowed; }
-  .btn-skip{ background:var(--cream-dim); color:var(--ink); }
-
-  .feedback{ text-align:center; font-family:'Baloo 2', sans-serif; font-weight:700; font-size:15px; min-height:22px; margin-bottom:6px; }
-  .feedback.good{ color:var(--lime-dark); }
-  .feedback.bad{ color:var(--watermelon); }
-  .feedback.info{ color:var(--blueberry); }
-
-  .summary-emoji{ font-size:56px; text-align:center; margin-bottom:6px; }
-  .summary-title{ font-family:'Baloo 2', sans-serif; font-weight:800; font-size:22px; text-align:center; margin:0 0 14px; }
-  .summary-rows{ display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
-  .summary-row{ display:flex; justify-content:space-between; align-items:center; background:var(--cream-dim); border-radius:12px; padding:10px 14px; font-weight:800; font-size:14px; }
-  .summary-row span:last-child{ color:var(--mango-dark); }
-
-  .hidden{ display:none !important; }
-
-  @keyframes fade-in{ 0%{opacity:0;} 100%{opacity:1;} }
-  @keyframes shake{
-    0%,100%{ transform:translateX(0); }
-    20%{ transform:translateX(-6px); }
-    40%{ transform:translateX(6px); }
-    60%{ transform:translateX(-4px); }
-    80%{ transform:translateX(4px); }
-  }
-  @keyframes coin-pop{
-    0%{ transform:translateY(0) scale(1); opacity:1; }
-    100%{ transform:translateY(-26px) scale(1.3); opacity:0; }
-  }
-  .coin-float{ position:absolute; font-family:'Baloo 2',sans-serif; font-weight:800; color:var(--gold-dark); pointer-events:none; animation: coin-pop .8s ease forwards; }
-
-  .mute-btn{
-    position:fixed; top:14px; right:14px; z-index:50;
-    width:42px; height:42px; border-radius:50%; border:none;
-    background:var(--cream); color:var(--ink);
-    font-size:18px; cursor:pointer;
-    box-shadow:0 6px 14px rgba(0,0,0,0.3), inset 0 0 0 2px rgba(18,58,50,0.08);
-    display:flex; align-items:center; justify-content:center;
-    transition: transform .12s ease;
-  }
-  .mute-btn:active{ transform:scale(0.9); }
-
-  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0e3b2f;color:#222}
+.wrap{max-width:900px;margin:auto;background:#fff9eb;min-height:100vh;padding:22px}
+h1{text-align:center;margin:8px 0;color:#7b4bd4}.sub{text-align:center;color:#666}
+.card{background:white;border:1px solid #ead8b6;border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 5px 18px #0001}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input,textarea,select{width:100%;padding:13px;border:2px solid #e6d2ae;border-radius:12px;font-size:16px;background:#fff}
+button{border:0;border-radius:12px;padding:13px 18px;font-weight:700;cursor:pointer}
+.primary{width:100%;background:#7650d9;color:white;font-size:17px}.secondary{background:#eee}.danger{background:#d9534f;color:white}
+.hidden{display:none}.status{padding:12px;background:#eef3ff;border-radius:12px;margin-top:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.letter{background:#f2e7ff;border:2px solid #c9a8ff;padding:12px;border-radius:10px;font-weight:700}
+.wordbox{font-size:30px;letter-spacing:8px;text-align:center;margin:20px 0;min-height:50px}
+.info{text-align:center}.meaning{font-size:20px;color:#5c3c9c;font-weight:700}.example{color:#555;font-style:italic}
+.badge{display:inline-block;padding:6px 10px;background:#f1df9c;border-radius:20px;margin:3px}
+.wrong{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #eee;padding:10px 0}
+@media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.wrap{padding:12px}}
 </style>
 </head>
 <body>
-<button class="mute-btn" id="btn-mute" title="Bật/tắt nhạc nền">🔊</button>
-<div class="app">
-  <div class="brand">
-    <h1>Fruity <span>Guesser+</span></h1>
-    <p>Xếp chữ cái • Đoán từ vựng • Săn combo ăn xu 🪙</p>
-  </div>
+<div class="wrap">
+<h1>🍉 Fruity Guesser+</h1>
+<div class="sub">Game học từ vựng tiếng Anh bằng cách xếp chữ</div>
 
-  <!-- ================= TOPIC SCREEN ================= -->
-  <div class="panel" id="screen-topic">
-    <div class="panel-title">Chọn chủ đề</div>
-    <div class="panel-sub">Mỗi chủ đề có 5 cấp độ, từ dễ đến khó.</div>
-    <div class="topic-grid" id="topic-grid"></div>
-  </div>
+<section id="home" class="card">
+<h2>🤖 Tạo chủ đề bằng AI</h2>
+<p>AI sẽ tìm thông tin trên web rồi tạo 30 từ vựng theo 5 cấp độ.</p>
 
-  <!-- ================= MENU (LEVEL) SCREEN ================= -->
-  <div class="panel hidden" id="screen-menu">
-    <div class="topbar">
-      <button class="btn-back" id="btn-back-topic">← Chủ đề</button>
-      <div class="stat-pill coins">🪙 <span id="coin-count-menu">0</span></div>
-    </div>
-    <div class="panel-title" id="menu-title">Chọn cấp độ</div>
-    <div class="panel-sub" id="menu-sub">Cấp 1 dễ nhất — Cấp 5 khó nhất. Mỗi cấp có 6 từ vựng.</div>
-    <div class="level-grid" id="level-grid"></div>
-  </div>
+<label>Chủ đề muốn học</label>
+<input id="topic" placeholder="Ví dụ: Du lịch Nhật Bản, AI, bóng đá, cà phê Việt Nam...">
 
-  <!-- ================= GAME SCREEN ================= -->
-  <div class="panel hidden" id="screen-game">
-    <div class="topbar">
-      <button class="btn-back" id="btn-back">← Cấp độ</button>
-      <div style="display:flex; gap:8px;">
-        <div class="stat-pill coins">🪙 <span id="coin-count">0</span></div>
-        <div class="stat-pill combo">🔥 <span id="combo-count">0</span></div>
-      </div>
-    </div>
+<label>Mục tiêu / đối tượng</label>
+<textarea id="audience" rows="3" placeholder="Ví dụ: tiếng Anh giao tiếp cho sinh viên, ưu tiên từ thông dụng..."></textarea>
 
-    <div style="font-weight:800; font-size:13px; color:var(--ink-soft); text-align:center; margin-bottom:2px;" id="progress-label">
-      Cấp 1 • Từ 1/6
-    </div>
+<label>Độ khó</label>
+<select id="difficulty">
+<option>Từ dễ → khó</option>
+<option>Chủ yếu cơ bản</option>
+<option>Trung cấp → nâng cao</option>
+<option>Nâng cao</option>
+</select>
 
-    <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%;"></div></div>
+<button class="primary" id="generate">🔎 Tìm web + 🤖 Tạo 30 từ</button>
+<div id="status" class="status">Sẵn sàng.</div>
+</section>
 
-    <div class="word-stage">
-      <div class="photo-frame">
-        <img id="fruit-photo" src="" alt="Gợi ý hình ảnh" referrerpolicy="no-referrer">
-        <div class="photo-fallback" id="photo-fallback">🍎</div>
-      </div>
-      <div class="word-caption">📷 Ảnh gợi ý — bấm chữ để điền vào chỗ trống</div>
-      <div class="blanks" id="blanks"></div>
-    </div>
+<section id="game" class="card hidden">
+<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+<span class="badge" id="level"></span><span class="badge" id="progress"></span><span class="badge">⏱️ <b id="timer">30</b></span>
+</div>
+<div class="wordbox" id="wordbox"></div>
+<div class="grid" id="letters"></div>
+<div class="info">
+<p class="meaning" id="meaning"></p>
+<p class="example" id="example"></p>
+</div>
+<button class="secondary" id="skip">Bỏ qua</button>
+<button class="secondary" id="back">Về trang chủ</button>
+</section>
 
-    <div class="feedback" id="feedback"></div>
-
-    <div class="letter-bank" id="letter-bank"></div>
-
-    <div class="actions">
-      <button class="btn btn-hint" id="btn-hint">💡 Gợi ý chữ (15🪙)</button>
-      <button class="btn btn-skip" id="btn-skip">Bỏ qua ⏭</button>
-    </div>
-  </div>
-
-  <!-- ================= SUMMARY SCREEN ================= -->
-  <div class="panel hidden" id="screen-summary">
-    <div class="summary-emoji" id="summary-emoji">🏆</div>
-    <div class="summary-title" id="summary-title">Hoàn thành Cấp 1!</div>
-    <div class="summary-rows">
-      <div class="summary-row"><span>Số từ đoán đúng</span><span id="summary-correct">0/6</span></div>
-      <div class="summary-row"><span>Combo cao nhất</span><span id="summary-combo">0</span></div>
-      <div class="summary-row"><span>Xu kiếm được</span><span id="summary-coins">+0 🪙</span></div>
-      <div class="summary-row"><span>Tổng xu hiện có</span><span id="summary-total">0 🪙</span></div>
-    </div>
-    <div class="actions">
-      <button class="btn btn-skip" id="btn-replay">🔁 Chơi lại</button>
-      <button class="btn btn-hint" id="btn-next-level">Cấp tiếp theo →</button>
-    </div>
-  </div>
+<section class="card">
+<h2>📕 Sổ từ vựng làm sai</h2>
+<div id="wrongList">Chưa có từ sai.</div>
+<button class="secondary" id="clearWrong">Xóa sổ từ sai</button>
+</section>
 </div>
 
 <script>
-(function(){
-  "use strict";
+const AI_API_URL = "PASTE_YOUR_WORKER_URL_HERE";
 
-  /* ---------------- Data ---------------- */
-  // Each word: w = English target word, e = emoji fallback, img = photo search keywords
-  const TOPICS = [
-    {
-      id:'fruit', icon:'🍎', name:'Trái Cây', desc:'Học tên trái cây bằng ảnh thật',
-      levels:[
-        { label:"Cấp 1", name:"Vườn nhà", desc:"Trái cây quen thuộc", time:55, decoys:2, coinBase:10, stars:1,
-          words:[
-            {w:"kiwi",  e:"🥝", img:"kiwi,fruit"},
-            {w:"pear",  e:"🍐", img:"pear,fruit"},
-            {w:"lemon", e:"🍋", img:"lemon,fruit"},
-            {w:"mango", e:"🥭", img:"mango,fruit"},
-            {w:"melon", e:"🍈", img:"melon,fruit"},
-            {w:"apple", e:"🍎", img:"apple,fruit"}
-          ]},
-        { label:"Cấp 2", name:"Chợ trái cây", desc:"Thêm vài cái tên mới", time:50, decoys:3, coinBase:14, stars:2,
-          words:[
-            {w:"banana", e:"🍌", img:"banana,fruit"},
-            {w:"cherry", e:"🍒", img:"cherry,fruit"},
-            {w:"orange", e:"🍊", img:"orange,fruit"},
-            {w:"tomato", e:"🍅", img:"tomato,vegetable"},
-            {w:"papaya", e:"🥭", img:"papaya,fruit"},
-            {w:"guava",  e:"🍈", img:"guava,fruit"}
-          ]},
-        { label:"Cấp 3", name:"Vùng nhiệt đới", desc:"Tên dài hơn, khó hơn", time:45, decoys:3, coinBase:18, stars:3,
-          words:[
-            {w:"coconut", e:"🥥", img:"coconut,fruit"},
-            {w:"avocado", e:"🥑", img:"avocado,fruit"},
-            {w:"apricot", e:"🍑", img:"apricot,fruit"},
-            {w:"lychee",  e:"🍈", img:"lychee,fruit"},
-            {w:"kumquat", e:"🍊", img:"kumquat,fruit"},
-            {w:"currant", e:"🫐", img:"currant,berry"}
-          ]},
-        { label:"Cấp 4", name:"Rừng quả mọng", desc:"Cẩn thận với chữ cái giả", time:40, decoys:4, coinBase:24, stars:4,
-          words:[
-            {w:"tangerine", e:"🍊", img:"tangerine,fruit"},
-            {w:"blueberry", e:"🫐", img:"blueberry,fruit"},
-            {w:"cranberry", e:"🫐", img:"cranberry,fruit"},
-            {w:"starfruit", e:"⭐", img:"starfruit"},
-            {w:"mandarin",  e:"🍊", img:"mandarin,orange"},
-            {w:"plantain",  e:"🍌", img:"plantain,banana"}
-          ]},
-        { label:"Cấp 5", name:"Bậc thầy trái cây", desc:"Từ dài nhất, thời gian ít nhất", time:35, decoys:5, coinBase:32, stars:5,
-          words:[
-            {w:"pomegranate", e:"🍎", img:"pomegranate,fruit"},
-            {w:"dragonfruit", e:"🐉", img:"dragonfruit"},
-            {w:"watermelon", e:"🍉", img:"watermelon,fruit"},
-            {w:"grapefruit", e:"🍊", img:"grapefruit,fruit"},
-            {w:"strawberry", e:"🍓", img:"strawberry,fruit"},
-            {w:"blackberry", e:"🫐", img:"blackberry,fruit"}
-          ]}
-      ]
-    },
-    {
-      id:'marketing', icon:'📣', name:'Marketing', desc:'Từ vựng tiếp thị qua hình ảnh thực tế',
-      levels:[
-        { label:"Cấp 1", name:"Nhập môn", desc:"Khái niệm cơ bản", time:55, decoys:2, coinBase:10, stars:1,
-          words:[
-            {w:"brand", e:"🏷️", img:"brand,logo,design"},
-            {w:"sales", e:"🏷️", img:"sale,tag,shop"},
-            {w:"price", e:"💲", img:"price,tag,shopping"},
-            {w:"media", e:"🎥", img:"camera,microphone,studio"},
-            {w:"trend", e:"📈", img:"graph,arrow,growth"},
-            {w:"offer", e:"🏷️", img:"discount,sign,shop"}
-          ]},
-        { label:"Cấp 2", name:"Ra thị trường", desc:"Thêm thuật ngữ mới", time:50, decoys:3, coinBase:14, stars:2,
-          words:[
-            {w:"market", e:"🏪", img:"marketplace,stall"},
-            {w:"coupon", e:"🎫", img:"coupon,voucher"},
-            {w:"banner", e:"📰", img:"billboard,advertising"},
-            {w:"social", e:"📱", img:"smartphone,social,media"},
-            {w:"review", e:"⭐", img:"star,rating,review"},
-            {w:"budget", e:"🧮", img:"calculator,money,budget"}
-          ]},
-        { label:"Cấp 3", name:"Xây dựng nội dung", desc:"Từ dài hơn, khó hơn", time:45, decoys:3, coinBase:18, stars:3,
-          words:[
-            {w:"content", e:"🎬", img:"content,creator,laptop"},
-            {w:"catalog", e:"📖", img:"catalog,magazine"},
-            {w:"website", e:"💻", img:"website,laptop,screen"},
-            {w:"feedback", e:"📝", img:"survey,feedback,form"},
-            {w:"audience", e:"👥", img:"audience,crowd,conference"},
-            {w:"discount", e:"➗", img:"discount,percent,sign"}
-          ]},
-        { label:"Cấp 4", name:"Chiến dịch", desc:"Cẩn thận với chữ cái giả", time:40, decoys:4, coinBase:24, stars:4,
-          words:[
-            {w:"campaign", e:"📣", img:"megaphone,marketing"},
-            {w:"strategy", e:"♟️", img:"chess,strategy,business"},
-            {w:"branding", e:"🎨", img:"logo,design,branding"},
-            {w:"shopping", e:"🛒", img:"shopping,cart,mall"},
-            {w:"consumer", e:"🛍️", img:"customer,shopping,bags"},
-            {w:"marketing", e:"📊", img:"marketing,team,meeting"}
-          ]},
-        { label:"Cấp 5", name:"Bậc thầy Marketing", desc:"Thuật ngữ dài, thời gian gấp rút", time:35, decoys:5, coinBase:32, stars:5,
-          words:[
-            {w:"promotion", e:"📢", img:"sale,promotion,megaphone"},
-            {w:"analytics", e:"📊", img:"dashboard,chart,analytics"},
-            {w:"engagement", e:"❤️", img:"like,heart,social,media"},
-            {w:"advertising", e:"🪧", img:"billboard,advertising,city"},
-            {w:"influencer", e:"🤳", img:"vlogger,camera,phone"},
-            {w:"subscription", e:"📦", img:"subscription,box,delivery"}
-          ]}
-      ]
-    },
-    {
-      id:'business', icon:'💼', name:'Quản Trị Kinh Doanh', desc:'Từ vựng doanh nghiệp qua hình ảnh thực tế',
-      levels:[
-        { label:"Cấp 1", name:"Nền tảng", desc:"Khái niệm cơ bản", time:55, decoys:2, coinBase:10, stars:1,
-          words:[
-            {w:"boss", e:"🧑‍💼", img:"businessman,office"},
-            {w:"team", e:"🤝", img:"business,team,handshake"},
-            {w:"plan", e:"📋", img:"business,plan,notebook"},
-            {w:"goal", e:"🎯", img:"target,dartboard"},
-            {w:"risk", e:"⚠️", img:"risk,warning,business"},
-            {w:"cost", e:"🧾", img:"calculator,receipt"}
-          ]},
-        { label:"Cấp 2", name:"Vận hành", desc:"Thêm thuật ngữ mới", time:50, decoys:3, coinBase:14, stars:2,
-          words:[
-            {w:"profit", e:"💹", img:"growth,chart,money"},
-            {w:"client", e:"🤝", img:"handshake,business,meeting"},
-            {w:"leader", e:"🧑‍💼", img:"leader,meeting,standing"},
-            {w:"office", e:"🏢", img:"office,workspace"},
-            {w:"salary", e:"💵", img:"paycheck,money"},
-            {w:"vendor", e:"🏪", img:"market,vendor,stall"}
-          ]},
-        { label:"Cấp 3", name:"Phòng ban", desc:"Từ dài hơn, khó hơn", time:45, decoys:3, coinBase:18, stars:3,
-          words:[
-            {w:"manager", e:"🧑‍💼", img:"manager,office,documents"},
-            {w:"finance", e:"💰", img:"finance,calculator,chart"},
-            {w:"meeting", e:"🗓️", img:"meeting,conference,room"},
-            {w:"project", e:"📌", img:"project,planning,board"},
-            {w:"revenue", e:"📈", img:"growth,chart,money"},
-            {w:"company", e:"🏢", img:"corporate,building"}
-          ]},
-        { label:"Cấp 4", name:"Chiến lược", desc:"Cẩn thận với chữ cái giả", time:40, decoys:4, coinBase:24, stars:4,
-          words:[
-            {w:"employee", e:"🧑‍💻", img:"office,worker,desk"},
-            {w:"contract", e:"📝", img:"signing,contract,pen"},
-            {w:"resource", e:"📦", img:"warehouse,boxes"},
-            {w:"decision", e:"🚦", img:"crossroads,signpost"},
-            {w:"schedule", e:"🗓️", img:"calendar,planner"},
-            {w:"executive", e:"🧑‍💼", img:"executive,office,businessman"}
-          ]},
-        { label:"Cấp 5", name:"Bậc thầy Quản Trị", desc:"Thuật ngữ dài, thời gian gấp rút", time:35, decoys:5, coinBase:32, stars:5,
-          words:[
-            {w:"management", e:"🧑‍🤝‍🧑", img:"business,team,table"},
-            {w:"negotiation", e:"🤝", img:"handshake,negotiation,table"},
-            {w:"stakeholder", e:"👥", img:"business,meeting,group"},
-            {w:"leadership", e:"🧭", img:"leader,pointing,chart"},
-            {w:"organization", e:"🗂️", img:"org,chart,team"},
-            {w:"productivity", e:"✅", img:"work,desk,checklist"}
-          ]}
-      ]
-    }
-  ];
+const baseWords = [
+["apple","🍎"],["banana","🍌"],["orange","🍊"],["grape","🍇"],["watermelon","🍉"],["mango","🥭"],
+["pineapple","🍍"],["strawberry","🍓"],["lemon","🍋"],["kiwi","🥝"],["peach","🍑"],["cherry","🍒"],
+["strategy","chiến lược"],["customer","khách hàng"],["market","thị trường"],["brand","thương hiệu"],["sales","doanh số"],["campaign","chiến dịch"],
+["revenue","doanh thu"],["profit","lợi nhuận"],["manager","quản lý"],["leadership","lãnh đạo"],["budget","ngân sách"],["investment","đầu tư"],
+["business","kinh doanh"],["company","công ty"],["employee","nhân viên"],["meeting","cuộc họp"],["project","dự án"],["deadline","hạn chót"]
+];
 
-  /* ---------------- State ---------------- */
-  const state = {
-    coins: 0,
-    combo: 0,
-    maxComboThisLevel: 0,
-    topicIndex: 0,
-    levelIndex: 0,
-    wordIndex: 0,
-    correctCount: 0,
-    levelCoinsEarned: 0,
-    timeLeft: 0,
-    timerHandle: null,
-    filled: [],
-    bank: [],
-    lockedIdx: new Set(),
-    musicMuted: false
-  };
+let words=[], index=0, seconds=30, timer=null, selected=[];
+const wrongKey="fruity_guesser_wrong_v2";
 
-  const btnMute = document.getElementById('btn-mute');
+function adaptBase(){
+ return baseWords.map((x,i)=>({word:x[0],meaning:x[1],example:`This is an example of ${x[0]}.`,image_query:x[0],level:Math.floor(i/6)+1}));
+}
+function saveWrong(w){
+ const a=JSON.parse(localStorage.getItem(wrongKey)||"[]");
+ const k=w.word.toLowerCase();
+ const old=a.find(x=>x.word.toLowerCase()===k);
+ if(old) old.count=(old.count||1)+1;
+ else a.push({word:w.word,meaning:w.meaning,example:w.example,count:1});
+ a.sort((x,y)=>(y.count||0)-(x.count||0));
+ localStorage.setItem(wrongKey,JSON.stringify(a.slice(0,200)));
+ renderWrong();
+}
+function renderWrong(){
+ const el=document.getElementById("wrongList"), a=JSON.parse(localStorage.getItem(wrongKey)||"[]");
+ if(!a.length){el.textContent="Chưa có từ sai.";return}
+ el.innerHTML=a.map(x=>`<div class="wrong"><span><b>${esc(x.word)}</b> — ${esc(x.meaning||"")}</span><span>❌ ${x.count||1}</span></div>`).join("");
+}
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 
-  /* ---------------- DOM refs ---------------- */
-  const screenTopic = document.getElementById('screen-topic');
-  const screenMenu = document.getElementById('screen-menu');
-  const screenGame = document.getElementById('screen-game');
-  const screenSummary = document.getElementById('screen-summary');
+function current(){return words[index]}
 
-  const topicGrid = document.getElementById('topic-grid');
-  const levelGrid = document.getElementById('level-grid');
-  const menuTitle = document.getElementById('menu-title');
-  const menuSub = document.getElementById('menu-sub');
-  const coinCountMenuEl = document.getElementById('coin-count-menu');
+function start(){
+ document.getElementById("home").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ index=0; show();
+}
+function show(){
+ if(index>=words.length){finish();return}
+ const w=current();
+ document.getElementById("level").textContent="Cấp "+(w.level||Math.floor(index/6)+1);
+ document.getElementById("progress").textContent=(index+1)+"/"+words.length;
+ document.getElementById("wordbox").textContent=w.emoji||"🔤";
+ document.getElementById("meaning").textContent=w.meaning||"";
+ document.getElementById("example").textContent=w.example||"";
+ const letters=(w.word||"").toUpperCase().split("");
+ selected=[];
+ document.getElementById("letters").innerHTML="";
+ shuffle(letters).forEach((ch,i)=>{
+   const b=document.createElement("button");b.className="letter";b.textContent=ch;b.onclick=()=>pick(ch,b);
+   document.getElementById("letters").appendChild(b);
+ });
+ seconds=30;document.getElementById("timer").textContent=seconds;
+ clearInterval(timer);timer=setInterval(()=>{seconds--;document.getElementById("timer").textContent=seconds;if(seconds<=0){clearInterval(timer);wrongAndNext()}},1000);
+}
+function pick(ch,b){
+ selected.push(ch);b.disabled=true;
+ document.getElementById("wordbox").textContent=selected.join("");
+ if(selected.length===(current().word||"").length){
+   clearInterval(timer);
+   if(selected.join("").toLowerCase()==current().word.toLowerCase()) next();
+   else wrongAndNext();
+ }
+}
+function next(){index++;show()}
+function wrongAndNext(){saveWrong(current());setTimeout(()=>next(),400)}
+function finish(){
+ clearInterval(timer);document.getElementById("wordbox").textContent="🎉 Hoàn thành!";
+ document.getElementById("letters").innerHTML="";
+ document.getElementById("meaning").textContent="Bạn đã hoàn thành chủ đề.";
+}
+function shuffle(a){return a.sort(()=>Math.random()-.5)}
+document.getElementById("skip").onclick=wrongAndNext;
+document.getElementById("back").onclick=()=>{clearInterval(timer);document.getElementById("game").classList.add("hidden");document.getElementById("home").classList.remove("hidden")};
+document.getElementById("clearWrong").onclick=()=>{localStorage.removeItem(wrongKey);renderWrong()};
 
-  const coinCountEl = document.getElementById('coin-count');
-  const comboCountEl = document.getElementById('combo-count');
-  const progressLabel = document.getElementById('progress-label');
-  const timerFill = document.getElementById('timer-fill');
-  const fruitPhotoEl = document.getElementById('fruit-photo');
-  const photoFallbackEl = document.getElementById('photo-fallback');
-  const blanksEl = document.getElementById('blanks');
-  const bankEl = document.getElementById('letter-bank');
-  const feedbackEl = document.getElementById('feedback');
-  const btnHint = document.getElementById('btn-hint');
-  const btnSkip = document.getElementById('btn-skip');
-  const btnBack = document.getElementById('btn-back');
-  const btnBackTopic = document.getElementById('btn-back-topic');
-
-  const summaryEmoji = document.getElementById('summary-emoji');
-  const summaryTitle = document.getElementById('summary-title');
-  const summaryCorrect = document.getElementById('summary-correct');
-  const summaryCombo = document.getElementById('summary-combo');
-  const summaryCoins = document.getElementById('summary-coins');
-  const summaryTotal = document.getElementById('summary-total');
-  const btnReplay = document.getElementById('btn-replay');
-  const btnNextLevel = document.getElementById('btn-next-level');
-
-  const HINT_COST = 15;
-
-  /* ---------------- Audio engine (fully synthesized, no external files) ---------------- */
-  let audioCtx = null;
-  let masterGain = null;
-  let musicGain = null;
-  let sfxGain = null;
-  let musicTimer = null;
-  let musicStep = 0;
-
-  const STEP_SEC = 0.22;
-  // Cheerful 8-step pentatonic arpeggio (C major pentatonic) for the melody layer
-  const MELODY_SEQ = [523.25, 659.25, 783.99, 659.25, 587.33, 783.99, 659.25, 523.25];
-  // Simple root-note bass pulse under the melody
-  const BASS_SEQ = [130.81, null, 196.00, null, 146.83, null, 196.00, null];
-
-  function ensureAudio(){
-    if(audioCtx) return;
-    try{
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = state.musicMuted ? 0 : 0.5;
-      masterGain.connect(audioCtx.destination);
-
-      musicGain = audioCtx.createGain();
-      musicGain.gain.value = 0.22;
-      musicGain.connect(masterGain);
-
-      sfxGain = audioCtx.createGain();
-      sfxGain.gain.value = 0.4;
-      sfxGain.connect(masterGain);
-
-      startMusicLoop();
-    }catch(e){ /* Web Audio not available: game still works without sound */ }
-  }
-
-  function resumeIfNeeded(){
-    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-  }
-
-  function playTone(freq, startTime, duration, type, dest, peak){
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    g.gain.setValueAtTime(0.0001, startTime);
-    g.gain.linearRampToValueAtTime(peak, startTime + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-    osc.connect(g);
-    g.connect(dest);
-    osc.start(startTime);
-    osc.stop(startTime + duration + 0.05);
-  }
-
-  function startMusicLoop(){
-    clearInterval(musicTimer);
-    musicStep = 0;
-    musicTimer = setInterval(()=>{
-      if(!audioCtx) return;
-      resumeIfNeeded();
-      const t = audioCtx.currentTime + 0.02;
-      const mFreq = MELODY_SEQ[musicStep % MELODY_SEQ.length];
-      if(mFreq) playTone(mFreq, t, STEP_SEC * 0.9, 'triangle', musicGain, 0.5);
-      const bFreq = BASS_SEQ[musicStep % BASS_SEQ.length];
-      if(bFreq) playTone(bFreq, t, STEP_SEC * 1.8, 'square', musicGain, 0.35);
-      musicStep++;
-    }, STEP_SEC * 1000);
-  }
-
-  function sfxTileClick(){
-    if(!audioCtx) return;
-    resumeIfNeeded();
-    playTone(880, audioCtx.currentTime, 0.06, 'square', sfxGain, 0.22);
-  }
-  function sfxCorrect(){
-    if(!audioCtx) return;
-    resumeIfNeeded();
-    const t = audioCtx.currentTime;
-    playTone(523.25, t, 0.12, 'square', sfxGain, 0.55);
-    playTone(783.99, t + 0.09, 0.16, 'square', sfxGain, 0.55);
-    playTone(1046.50, t + 0.18, 0.18, 'square', sfxGain, 0.5);
-  }
-  function sfxWrong(){
-    if(!audioCtx) return;
-    resumeIfNeeded();
-    const t = audioCtx.currentTime;
-    playTone(196.00, t, 0.18, 'sawtooth', sfxGain, 0.4);
-    playTone(146.83, t + 0.12, 0.22, 'sawtooth', sfxGain, 0.4);
-  }
-  function sfxHint(){
-    if(!audioCtx) return;
-    resumeIfNeeded();
-    playTone(659.25, audioCtx.currentTime, 0.12, 'sine', sfxGain, 0.45);
-  }
-  function sfxTimeUp(){
-    if(!audioCtx) return;
-    resumeIfNeeded();
-    const t = audioCtx.currentTime;
-    playTone(261.63, t, 0.3, 'sawtooth', sfxGain, 0.4);
-  }
-  function sfxLevelDone(){
-    if(!audioCtx) return;
-    resumeIfNeeded();
-    const t = audioCtx.currentTime;
-    [523.25, 659.25, 783.99, 1046.50].forEach((f, i)=>{
-      playTone(f, t + i * 0.13, 0.2, 'square', sfxGain, 0.5);
-    });
-  }
-
-  btnMute.addEventListener('click', ()=>{
-    ensureAudio();
-    state.musicMuted = !state.musicMuted;
-    if(masterGain) masterGain.gain.value = state.musicMuted ? 0 : 0.5;
-    btnMute.textContent = state.musicMuted ? '🔇' : '🔊';
-  });
-
-  // Start audio on the very first user interaction anywhere on the page
-  // (required by browser autoplay policies).
-  document.addEventListener('click', function firstClick(){
-    ensureAudio();
-    document.removeEventListener('click', firstClick);
-  }, { once:true });
-
-  /* ---------------- Helpers ---------------- */
-  function showScreen(name){
-    screenTopic.classList.toggle('hidden', name !== 'topic');
-    screenMenu.classList.toggle('hidden', name !== 'menu');
-    screenGame.classList.toggle('hidden', name !== 'game');
-    screenSummary.classList.toggle('hidden', name !== 'summary');
-  }
-
-  function shuffle(arr){
-    const a = arr.slice();
-    for(let i=a.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [a[i],a[j]] = [a[j],a[i]];
-    }
-    return a;
-  }
-
-  const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split("");
-
-  function updateStats(){
-    coinCountEl.textContent = state.coins;
-    comboCountEl.textContent = state.combo;
-    coinCountMenuEl.textContent = state.coins;
-  }
-
-  function floatCoin(text, x, y){
-    const el = document.createElement('div');
-    el.className = 'coin-float';
-    el.textContent = text;
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
-    document.body.appendChild(el);
-    setTimeout(()=>el.remove(), 820);
-  }
-
-  function currentTopic(){ return TOPICS[state.topicIndex]; }
-  function currentLevel(){ return currentTopic().levels[state.levelIndex]; }
-  function currentWord(){ return currentLevel().words[state.wordIndex]; }
-
-  /* ---------------- Topic screen ---------------- */
-  function renderTopics(){
-    topicGrid.innerHTML = '';
-    TOPICS.forEach((topic, idx)=>{
-      const btn = document.createElement('button');
-      btn.className = 'topic-card';
-      btn.innerHTML = `
-        <div class="icon">${topic.icon}</div>
-        <div>
-          <div class="name">${topic.name}</div>
-          <div class="desc">${topic.desc}</div>
-        </div>
-      `;
-      btn.addEventListener('click', ()=>{
-        state.topicIndex = idx;
-        renderLevels();
-        menuTitle.textContent = `${topic.icon} ${topic.name}`;
-        menuSub.textContent = "Cấp 1 dễ nhất — Cấp 5 khó nhất. Mỗi cấp có 6 từ vựng.";
-        showScreen('menu');
-      });
-      topicGrid.appendChild(btn);
-    });
-  }
-
-  /* ---------------- Level screen ---------------- */
-  function renderLevels(){
-    levelGrid.innerHTML = '';
-    currentTopic().levels.forEach((lv, idx)=>{
-      const btn = document.createElement('button');
-      btn.className = 'crate';
-      const emojis = lv.words.slice(0,3).map(w=>w.e).join(' ');
-      btn.innerHTML = `
-        <div class="lv-tag">${lv.label}</div>
-        <div class="lv-emojis">${emojis}</div>
-        <div class="lv-name">${lv.name}</div>
-        <div class="lv-desc">${lv.desc}</div>
-        <div class="lv-stars">${'★'.repeat(lv.stars)}${'☆'.repeat(5-lv.stars)}</div>
-      `;
-      btn.addEventListener('click', ()=> startLevel(idx));
-      levelGrid.appendChild(btn);
-    });
-  }
-
-  /* ---------------- Level / word flow ---------------- */
-  function startLevel(levelIndex){
-    state.levelIndex = levelIndex;
-    state.wordIndex = 0;
-    state.correctCount = 0;
-    state.levelCoinsEarned = 0;
-    state.maxComboThisLevel = 0;
-    state.combo = 0;
-    updateStats();
-    showScreen('game');
-    loadWord();
-  }
-
-  function loadWord(){
-    clearInterval(state.timerHandle);
-    const lv = currentLevel();
-    const word = currentWord();
-
-    state.filled = new Array(word.w.length).fill(null);
-    state.lockedIdx = new Set();
-    state.timeLeft = lv.time;
-
-    progressLabel.textContent = `${lv.label} • Từ ${state.wordIndex+1}/${lv.words.length}`;
-    feedbackEl.textContent = '';
-    feedbackEl.className = 'feedback';
-
-    loadPhoto(word);
-    buildBank(word.w, lv.decoys);
-    renderBlanks();
-    renderBank();
-    updateHintButton();
-    startTimer();
-  }
-
-  function loadPhoto(word){
-    photoFallbackEl.textContent = word.e;
-    photoFallbackEl.classList.remove('show');
-    fruitPhotoEl.style.display = 'block';
-    fruitPhotoEl.onerror = function(){
-      fruitPhotoEl.style.display = 'none';
-      photoFallbackEl.classList.add('show');
-    };
-    fruitPhotoEl.src = `https://loremflickr.com/480/360/${encodeURIComponent(word.img)}/all`;
-  }
-
-  function buildBank(word, decoyCount){
-    const letters = word.split('');
-    const decoys = [];
-    while(decoys.length < decoyCount){
-      const c = ALPHABET[Math.floor(Math.random()*ALPHABET.length)];
-      decoys.push(c);
-    }
-    state.bank = shuffle(letters.concat(decoys)).map(c => ({char:c, spent:false}));
-  }
-
-  function renderBlanks(){
-    blanksEl.innerHTML = '';
-    const word = currentWord().w;
-    for(let i=0;i<word.length;i++){
-      const div = document.createElement('div');
-      const isFilled = state.filled[i] !== null;
-      div.className = 'blank' + (isFilled ? ' filled' : '') + (state.lockedIdx.has(i) ? ' locked' : '');
-      div.textContent = isFilled ? state.filled[i].char.toUpperCase() : '';
-      div.dataset.idx = i;
-      if(isFilled && !state.lockedIdx.has(i)){
-        div.addEventListener('click', ()=> unfillBlank(i));
-      }
-      blanksEl.appendChild(div);
-    }
-  }
-
-  function renderBank(){
-    bankEl.innerHTML = '';
-    state.bank.forEach((tile, idx)=>{
-      const btn = document.createElement('button');
-      btn.className = 'tile' + (tile.spent ? ' spent' : '');
-      btn.textContent = tile.char.toUpperCase();
-      btn.addEventListener('click', ()=> fillBlank(idx));
-      bankEl.appendChild(btn);
-    });
-  }
-
-  function firstEmptyIdx(){
-    return state.filled.findIndex(f => f === null);
-  }
-
-  function fillBlank(bankIdx){
-    const tile = state.bank[bankIdx];
-    if(!tile || tile.spent) return;
-    const idx = firstEmptyIdx();
-    if(idx === -1) return;
-    state.filled[idx] = { char: tile.char, bankIdx };
-    tile.spent = true;
-    sfxTileClick();
-    renderBlanks();
-    renderBank();
-    maybeAutoCheck();
-  }
-
-  function unfillBlank(idx){
-    const f = state.filled[idx];
-    if(!f) return;
-    state.bank[f.bankIdx].spent = false;
-    state.filled[idx] = null;
-    renderBlanks();
-    renderBank();
-  }
-
-  function maybeAutoCheck(){
-    if(state.filled.every(f => f !== null)){
-      setTimeout(checkWord, 150);
-    }
-  }
-
-  function checkWord(){
-    const target = currentWord().w;
-    const attempt = state.filled.map(f => f.char).join('');
-    if(attempt === target){
-      onWordSuccess();
-    } else {
-      onWordWrong();
-    }
-  }
-
-  function onWordSuccess(){
-    clearInterval(state.timerHandle);
-    const lv = currentLevel();
-    state.combo += 1;
-    state.maxComboThisLevel = Math.max(state.maxComboThisLevel, state.combo);
-    const multiplier = 1 + Math.min(state.combo, 10) * 0.15;
-    const earned = Math.round(lv.coinBase * multiplier);
-    state.coins += earned;
-    state.levelCoinsEarned += earned;
-    state.correctCount += 1;
-    updateStats();
-    sfxCorrect();
-
-    feedbackEl.textContent = `Chính xác! +${earned}🪙  (combo x${state.combo})`;
-    feedbackEl.className = 'feedback good';
-
-    const rect = coinCountEl.getBoundingClientRect();
-    floatCoin('+'+earned+'🪙', rect.left, rect.top);
-
-    setTimeout(nextWord, 900);
-  }
-
-  function onWordWrong(){
-    state.combo = 0;
-    updateStats();
-    sfxWrong();
-    feedbackEl.textContent = 'Chưa đúng, thử lại nhé!';
-    feedbackEl.className = 'feedback bad';
-
-    Array.from(blanksEl.children).forEach(el => el.classList.add('shake'));
-    setTimeout(()=>{
-      for(let i=0;i<state.filled.length;i++){
-        if(state.filled[i] && !state.lockedIdx.has(i)){
-          state.bank[state.filled[i].bankIdx].spent = false;
-          state.filled[i] = null;
-        }
-      }
-      renderBlanks();
-      renderBank();
-    }, 420);
-  }
-
-  function nextWord(){
-    const lv = currentLevel();
-    if(state.wordIndex < lv.words.length - 1){
-      state.wordIndex += 1;
-      loadWord();
-    } else {
-      finishLevel();
-    }
-  }
-
-  function startTimer(){
-    updateTimerBar();
-    state.timerHandle = setInterval(()=>{
-      state.timeLeft -= 1;
-      updateTimerBar();
-      if(state.timeLeft <= 0){
-        clearInterval(state.timerHandle);
-        onTimeUp();
-      }
-    }, 1000);
-  }
-
-  function updateTimerBar(){
-    const lv = currentLevel();
-    const pct = Math.max(0, (state.timeLeft / lv.time) * 100);
-    timerFill.style.width = pct + '%';
-    timerFill.classList.remove('warn','danger');
-    if(pct < 20) timerFill.classList.add('danger');
-    else if(pct < 50) timerFill.classList.add('warn');
-  }
-
-  function onTimeUp(){
-    state.combo = 0;
-    updateStats();
-    sfxTimeUp();
-    feedbackEl.textContent = `Hết giờ! Từ đúng là: ${currentWord().w.toUpperCase()}`;
-    feedbackEl.className = 'feedback bad';
-    setTimeout(nextWord, 1300);
-  }
-
-  function useHint(){
-    if(state.coins < HINT_COST) return;
-    const idx = firstEmptyIdx();
-    if(idx === -1) return;
-
-    const target = currentWord().w;
-    const neededChar = target[idx];
-
-    let bankIdx = state.bank.findIndex(t => !t.spent && t.char === neededChar);
-    if(bankIdx === -1){
-      state.bank.push({char:neededChar, spent:true});
-      bankIdx = state.bank.length - 1;
-    } else {
-      state.bank[bankIdx].spent = true;
-    }
-
-    state.filled[idx] = { char:neededChar, bankIdx };
-    state.lockedIdx.add(idx);
-    state.coins -= HINT_COST;
-    updateStats();
-    sfxHint();
-    renderBlanks();
-    renderBank();
-    updateHintButton();
-    feedbackEl.textContent = 'Đã mở khoá 1 chữ cái 💡';
-    feedbackEl.className = 'feedback info';
-    maybeAutoCheck();
-  }
-
-  function updateHintButton(){
-    const noEmpty = firstEmptyIdx() === -1;
-    btnHint.disabled = state.coins < HINT_COST || noEmpty;
-    btnHint.textContent = `💡 Gợi ý chữ (${HINT_COST}🪙)`;
-  }
-
-  function skipWord(){
-    clearInterval(state.timerHandle);
-    state.combo = 0;
-    updateStats();
-    feedbackEl.textContent = `Đã bỏ qua. Từ đúng là: ${currentWord().w.toUpperCase()}`;
-    feedbackEl.className = 'feedback info';
-    setTimeout(nextWord, 900);
-  }
-
-  function finishLevel(){
-    const lv = currentLevel();
-    showScreen('summary');
-    sfxLevelDone();
-    const perfect = state.correctCount === lv.words.length;
-    summaryEmoji.textContent = perfect ? '🏆' : (state.correctCount >= lv.words.length/2 ? '🎉' : '🍋');
-    summaryTitle.textContent = `Hoàn thành ${lv.label}: ${lv.name}!`;
-    summaryCorrect.textContent = `${state.correctCount}/${lv.words.length}`;
-    summaryCombo.textContent = `x${state.maxComboThisLevel}`;
-    summaryCoins.textContent = `+${state.levelCoinsEarned} 🪙`;
-    summaryTotal.textContent = `${state.coins} 🪙`;
-
-    const hasNext = state.levelIndex < currentTopic().levels.length - 1;
-    btnNextLevel.style.display = hasNext ? 'block' : 'none';
-    btnNextLevel.textContent = 'Cấp tiếp theo →';
-  }
-
-  /* ---------------- Event bindings ---------------- */
-  btnHint.addEventListener('click', useHint);
-  btnSkip.addEventListener('click', skipWord);
-  btnBack.addEventListener('click', ()=>{
-    clearInterval(state.timerHandle);
-    showScreen('menu');
-  });
-  btnBackTopic.addEventListener('click', ()=> showScreen('topic'));
-  btnReplay.addEventListener('click', ()=> startLevel(state.levelIndex));
-  btnNextLevel.addEventListener('click', ()=>{
-    if(state.levelIndex < currentTopic().levels.length - 1){
-      startLevel(state.levelIndex + 1);
-    } else {
-      showScreen('menu');
-    }
-  });
-
-  /* ---------------- Init ---------------- */
-  renderTopics();
-  updateStats();
-  showScreen('topic');
-})();
+document.getElementById("generate").onclick=async()=>{
+ const topic=document.getElementById("topic").value.trim();
+ const audience=document.getElementById("audience").value.trim();
+ const difficulty=document.getElementById("difficulty").value;
+ const status=document.getElementById("status");
+ if(!topic){status.textContent="⚠️ Hãy nhập chủ đề.";return}
+ if(!AI_API_URL || AI_API_URL.includes("PASTE_YOUR")){status.textContent="⚠️ Bạn chưa cấu hình URL Cloudflare Worker trong index.html.";return}
+ status.textContent="🔎 AI đang tìm web và tạo 30 từ...";
+ document.getElementById("generate").disabled=true;
+ try{
+   const r=await fetch(AI_API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,audience,difficulty})});
+   const data=await r.json();
+   if(!r.ok) throw new Error(data.error||"Worker lỗi");
+   if(!data.words||data.words.length<30) throw new Error("AI chưa tạo đủ 30 từ.");
+   words=data.words.map((w,i)=>({...w,level:Math.floor(i/6)+1}));
+   status.textContent="✅ Đã tạo 30 từ. Bắt đầu chơi!";
+   start();
+ }catch(e){status.textContent="❌ "+e.message}
+ finally{document.getElementById("generate").disabled=false}
+};
+words=adaptBase();
+renderWrong();
 </script>
 </body>
 </html>
